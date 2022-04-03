@@ -1,40 +1,36 @@
-import helper as help_functions
 import sys
 import getopt
-import serpent as normal_serpent
+
+import helper as help_functions
+import serpent_ctr as ctr_serpent
 import observer as observer
 
-O = observer.Observer(["plainText", "userKey", "cipherText"])
-
 def main():
-    optList, rest = getopt.getopt(sys.argv[1:], "edhbt:k:p:c:i:")
+    number_of_thread = 2
+    observer_object = observer.Observer(["plainText", "userKey", "cipherText"])
+    opts, args = getopt.getopt(sys.argv[1:], "edhbt:k:p:c:i:")
     
-    if rest:
-        help_functions.helpExit("Sorry, can't make sense of this: '%s'" % rest)
+    if args:
+        help_functions.helpExit("Sorry, can't make sense of this: '%s'" % args)
 
-    # Transform the list of options into a more comfortable
-    # dictionary. This only works with non-repeated options, though, so
-    # tags (which are repeated) must be dealt with separately.
     options = {}
-    
-    for key, value in optList:
-        if key == "-t":
-            O.addTag(value)
+    for opt, arg in opts:
+        if opt == "-t":
+            observer_object.addTag(arg)
         else:
-            if key in options.keys():
-                help_functions.helpExit("Multiple occurrences of " + key)
+            if opt in options.keys():
+                help_functions.helpExit("Multiple occurrences of " + opt)
             else:
-                options[str.strip(key)] = str.strip(value)
+                options[str.strip(opt)] = str.strip(arg)
     
     # Not more than one mode
     mode = None
-    
-    for k in options.keys():
-        if k in ["-e", "-d", "-h"]:
+    for key in options.keys():
+        if key in ["-e", "-d", "-h"]:
             if mode:
-                help_functions.helpExit("you can only specify one mode")
+                help_functions.helpExit("You can only specify one mode")
             else:
-                mode = k
+                mode = key
 
     if not mode:
         help_functions.helpExit("No mode specified")
@@ -65,20 +61,20 @@ def main():
     if mode == "-e":
         userKey = help_functions.key_gen()
         iVBase = help_functions.random_iv(64)
-        print('Plain text=', plainText)
-        print("The Cipher text is: ", normal_serpent.encrypt_ctr(plainText, help_functions.convertToBitstring(userKey, 256), iVBase, 2))
-        print("The key is: ", userKey)
-        print("The Base IV is : ", iVBase)
+        print('The Plain text is: ', plainText)
+        print('The Cipher text is: ', ctr_serpent.encrypt_ctr(plainText, help_functions.convertToBitstring(userKey, 256), iVBase, number_of_thread))
+        print('The key is: ', userKey)
+        print('The Base IV is : ', iVBase)
 
     elif mode == "-d":
         userKey = options["-k"]
         iv = options["-i"]
 
-        if not userKey:
-            help_functions.helpExit("-k (key) required with -d (decrypt)")
+        if not userKey or not iv:
+            help_functions.helpExit("-k (key) and -i (iv) required with -d (decrypt)")
                 
-        print('Cipher text: ', cipherText)
-        print("The Plain text is: ", normal_serpent.decrypt_ctr(cipherText, help_functions.convertToBitstring(userKey, 256), iv, 2))
+        print('The Cipher text: ', cipherText)
+        print("The Plain text is: ", ctr_serpent.decrypt_ctr(cipherText, help_functions.convertToBitstring(userKey, 256), iv, number_of_thread))
 
     else:
         help_functions.helpExit()
