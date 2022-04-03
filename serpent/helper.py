@@ -14,6 +14,17 @@ def key_gen(size=32):
         key += convert_decimel_to_hexa(int((x*pow(10,16))%256)) #key=(x*10^16)%256
     return key
 
+def normal_serpent_key_gen(size=32):
+    key = ''
+    x = round(random.uniform(0, 1), 3)
+    r = round(random.uniform(0, 4), 3)
+
+    for i in range(size):
+        x=r*x*(1-x) #logistic map
+        key += convert_decimel_to_hexa(int((x*pow(10,16))%256)) #key=(x*10^16)%256
+    return key
+
+
 def convert_decimel_to_hexa(decimalValue):
     return hex(decimalValue).replace('0x', '')
 
@@ -582,8 +593,6 @@ def convertToBitstring(input, numBits):
     'numBits' bits)."""
 
     input = input.lower()
-
-    print('Input: ' + input) #Key = input
     
     if re.match("^[0-9a-f]+$", input):
         bitstring = hexstring2bitstring(input)
@@ -593,8 +602,6 @@ def convertToBitstring(input, numBits):
 
     # assert: bitstring now contains the bitstring version of the input
 
-    #print(numBits)
-    print(len(bitstring))
     #print('bitstring[numBits:]: '+ bitstring[numBits:])
 
     if len(bitstring) > numBits:
