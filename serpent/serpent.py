@@ -26,10 +26,6 @@ def encrypt(plainText, userKey):
     'userKey', using the normal algorithm, and return a 128-bit ciphertext
     bitstring."""
 
-    #O.show("fnTitle", "encrypt", None, "tu")
-    #O.show("plainText", plainText, "plainText")
-    #O.show("userKey", userKey, "userKey")
-
     K, KHat = help_functions.makeSubkeys(userKey)
 
     BHat = help_functions.IP(plainText) # BHat_0 at this stage
@@ -38,18 +34,12 @@ def encrypt(plainText, userKey):
     # BHat is now _32 i.e. _r
     C = help_functions.FP(BHat)
 
-    #O.show("cipherText", C, "cipherText")
-
     return C
 
 def decrypt(cipherText, userKey):
     """Decrypt the 128-bit bitstring 'cipherText' with the 256-bit
     bitstring 'userKey', using the normal algorithm, and return a 128-bit
     plaintext bitstring."""
-
-    #O.show("fnTitle", "decrypt", None, "tu")
-    #O.show("cipherText", cipherText, "cipherText")
-    #O.show("userKey", userKey, "userKey")
 
     K, KHat = help_functions.makeSubkeys(userKey)
 
@@ -59,7 +49,6 @@ def decrypt(cipherText, userKey):
     # BHat is now _0
     plainText = help_functions.IPInverse(BHat)
 
-    #O.show("plainText", plainText, "plainText")
     return plainText
 
 
@@ -68,18 +57,12 @@ def encryptBitslice(plainText, userKey):
     'userKey', using the bitslice algorithm, and return a 128-bit ciphertext
     bitstring."""
 
-    #O.show("fnTitle", "encryptBitslice", None, "tu")
-    #O.show("plainText", plainText, "plainText")
-    #O.show("userKey", userKey, "userKey")
-
     K, KHat = help_functions.makeSubkeys(userKey)
 
     B = plainText # B_0 at this stage
     for i in range(constants_values.r):
         B = help_functions.RBitslice(i, B, K) # Produce B_i+1 from B_i
     # B is now _r
-
-    #O.show("cipherText", B, "cipherText")
 
     return B
 
@@ -89,16 +72,11 @@ def decryptBitslice(cipherText, userKey):
     bitstring 'userKey', using the bitslice algorithm, and return a 128-bit
     plaintext bitstring."""
 
-    #O.show("fnTitle", "decryptBitslice", None, "tu")
-    #O.show("cipherText", cipherTexKHatt, "cipherText")
-    #O.show("userKey", userKey, "userKey")
-
     K, KHat = help_functions.makeSubkeys(userKey)
 
     B = cipherText # B_r at this stage
     for i in range(constants_values.r-1, -1, -1): # from r-1 down to 0 included
         B = help_functions.RBitsliceInverse(i, B, K) # Produce B_i from B_i+1
     # B is now _0
-
-    #O.show("plainText", B, "plainText")
+    
     return B
