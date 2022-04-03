@@ -423,4 +423,5 @@ help = """
             looking at all the intermediate results of each round as well. (You
             could use the single magic tag -t ALL if you didn't want to have to
             find out the names of the individual tags.)
+    ---------------------------------------------------------------------------
     """
