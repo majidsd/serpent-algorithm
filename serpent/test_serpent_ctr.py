@@ -59,7 +59,11 @@ def main():
     # only need to perform the action, without adding any extra print
     # statements here.
     if mode == "-e":
-        userKey = help_functions.key_gen()
+        if ('-k') in str(options):
+            userKey = options['-k']
+        else:
+            userKey = help_functions.key_gen()
+            
         iVBase = help_functions.random_iv(64)
         print('The Plain text is: ', plainText)
         print('The Cipher text is: ', ctr_serpent.encrypt_ctr(plainText, help_functions.convertToBitstring(userKey, 256), iVBase, number_of_thread))

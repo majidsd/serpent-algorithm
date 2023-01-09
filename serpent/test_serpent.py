@@ -52,7 +52,10 @@ def main():
             help_functions.helpExit("-c (ciphertext) is required when doing -d (decrypt)")
              
     if mode == "-e":
-        userKey = help_functions.key_gen()
+        if ('-k') in str(options):
+            userKey = options['-k']
+        else:
+            userKey = help_functions.key_gen()
         print('************************** Starting encryption **************************')
         print('The Plain text is: ', plainText)
         print("The Cipher text is: ", normal_serpent.encrypt(plainText, help_functions.convertToBitstring(userKey, 256)))
