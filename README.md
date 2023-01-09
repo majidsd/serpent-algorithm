@@ -1,6 +1,13 @@
 ## About Serpent Algorithm
 
+## About CTR Mode
+
 ## About The Code
+
+### Serpent Code
+
+
+### Serpent CTR Code
 
 
 ## How To Run
