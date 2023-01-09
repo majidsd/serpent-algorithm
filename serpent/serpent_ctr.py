@@ -4,7 +4,6 @@ import serpent as normal_serpent
 import threading
 import concurrent.futures
 
-
 class serpant_ctr (threading.Thread):
     def __init__(self, thread_id, name, sub_blocks, nonce, key):
         threading.Thread.__init__(self)
@@ -24,10 +23,9 @@ class serpant_ctr (threading.Thread):
         print("End "+ self.name)
         return ''.join(encrypted_sub_blocks)
 
-
 def inc_bytes(a):
     """ Returns a new byte array with the value increment by 1 """
-    b='1'
+    b = '1'
     max_len = max(len(a), len(b))
     a = a.zfill(max_len)
     b = b.zfill(max_len)
@@ -47,42 +45,31 @@ def inc_bytes(a):
         result = '1' + result
     return(result.zfill(max_len))
     
-
 def split_blocks(message, block_size=128, require_padding=True):
     assert len(message) % block_size == 0 or not require_padding
     return [message[i:i+128] for i in range(0, len(message), block_size)]
 
-
 def do_bulk_encrypt(name, sub_blocks, nonce, key):
-    #print("Starting "+ name)
     encrypted_sub_blocks = []
-    print(nonce,sub_blocks[0])
         
     for plaintext_block in sub_blocks:
-        block = helper_functions.binaryXor(plaintext_block, normal_serpent.encrypt((nonce), key))
+        block = helper_functions.binaryXor(plaintext_block, normal_serpent.encrypt(nonce, key))
         encrypted_sub_blocks.append(block)
         nonce = inc_bytes((nonce))
-        
-    #print("End "+ name)
     return ''.join(encrypted_sub_blocks)
-
 
 def do_bulk_decrypt(name, sub_blocks, nonce, key):
-    #print("Starting "+ name)
-    encrypted_sub_blocks = []
-    print(nonce,sub_blocks[0])
-    for ciphertext_block in sub_blocks:
-        block = helper_functions.binaryXor(ciphertext_block, normal_serpent.decrypt((nonce), key))
-        encrypted_sub_blocks.append(block)
-        nonce = inc_bytes((nonce))
-    #print("End "+ name)
-    return ''.join(encrypted_sub_blocks)
+    decrypted_sub_blocks = []
 
+    for ciphertext_block in sub_blocks:
+        block = helper_functions.binaryXor(normal_serpent.encrypt(nonce, key), ciphertext_block)
+        decrypted_sub_blocks.append(block)
+        nonce = inc_bytes((nonce))
+    return ''.join(decrypted_sub_blocks)
 
 def encrypt_ctr(plaintext, userKey, iv_base, number_of_thread):
-    cipher_text = '' 
+    cipher_text = ''
     nonce_base = iv_base
-
     splited_blocks = split_blocks(plaintext, require_padding=False)
 
     data_size = len(splited_blocks)
@@ -92,29 +79,21 @@ def encrypt_ctr(plaintext, userKey, iv_base, number_of_thread):
         chunk_data = 1
 
     count = 1
-
     with concurrent.futures.ThreadPoolExecutor() as executor:
         futures_list = []
         for i in range(0, data_size, chunk_data):
             args = ["Task " + str(count), splited_blocks[i: i + chunk_data], nonce_base + helper_functions.convert_decimel_to_binary64(i), userKey]
-            print('#####################', splited_blocks[i: i + chunk_data])
-            print('#####################', nonce_base + helper_functions.convert_decimel_to_binary64(i))
-            print('#####################', userKey)
             future = executor.submit(lambda p: do_bulk_encrypt(*p), args)
             futures_list.append(future)
             count += count
         
         for item in futures_list:
             cipher_text += item.result()
-
     return cipher_text
 
-
 def decrypt_ctr(cipherText, userKey, iv_base, number_of_thread):
-
     plain_text = '' 
     nonce_base = iv_base
-
     splited_blocks = split_blocks(cipherText, require_padding=False)
     
     data_size = len(splited_blocks)
@@ -124,19 +103,14 @@ def decrypt_ctr(cipherText, userKey, iv_base, number_of_thread):
         chunk_data = 1
 
     count = 1
-
     with concurrent.futures.ThreadPoolExecutor() as executor:
         futures_list = []
         for i in range(0, data_size, chunk_data):
             args = ["Task " + str(count), splited_blocks[i: i + chunk_data], nonce_base + helper_functions.convert_decimel_to_binary64(i), userKey]
-            print('#####################', splited_blocks[i: i + chunk_data])
-            print('#####################', nonce_base + helper_functions.convert_decimel_to_binary64(i))
-            print('#####################', userKey)
             future = executor.submit(lambda p: do_bulk_decrypt(*p), args)
             futures_list.append(future)
             count += count
         
         for item in futures_list:
             plain_text += item.result()
-
     return plain_text
