@@ -45,7 +45,7 @@ def inc_bytes(a):
         result = '1' + result
     return(result.zfill(max_len))
     
-def split_blocks(message, block_size=128, require_padding=True):
+def split_blocks(message, block_size=128, require_padding=False):
     assert len(message) % block_size == 0 or not require_padding
     return [message[i:i+128] for i in range(0, len(message), block_size)]
 

@@ -65,7 +65,7 @@ def main():
             userKey = help_functions.key_gen()
 
         iVBase = help_functions.random_iv(64)
-        print('The Plain text is: ', plainText, '\n')
+        print('The Plain text is: ', plainText)
         print('The Cipher text is: ', ctr_serpent.encrypt_ctr(plainText, help_functions.convertToBitstring(userKey, 256), iVBase, number_of_thread))
         print('The key is: ', userKey)
         print('The Base IV is : ', iVBase)
@@ -77,7 +77,7 @@ def main():
         if not userKey or not iv:
             help_functions.helpExit("-k (key) and -i (iv) required with -d (decrypt)")
                 
-        print('The Cipher text: ', cipherText, '\n')
+        print('The Cipher text: ', cipherText)
         print("The Plain text is: ", ctr_serpent.decrypt_ctr(cipherText, help_functions.convertToBitstring(userKey, 256), iv, number_of_thread))
 
     else:
