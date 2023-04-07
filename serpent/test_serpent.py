@@ -36,38 +36,38 @@ def main():
         help_functions.helpExit("No mode specified")
    
     # Put plainText, userKey, cipherText in bitstring format.
-    plainText =  cipherText = userKey = None
+    plain_text =  cipher_text = user_key = None
     
     if  ('-p') in str(options):
-        plainText = options["-p"]
+        plain_text = options["-p"]
         
     if ('-c') in str(options):
-        cipherText = options["-c"]
+        cipher_text = options["-c"]
         
     if mode == "-e":
-        if not plainText:
+        if not plain_text:
             help_functions.helpExit("-p (plaintext) is required when doing -e (encrypt)")
     if mode == "-d":
-        if not cipherText:
+        if not cipher_text:
             help_functions.helpExit("-c (ciphertext) is required when doing -d (decrypt)")
              
     if mode == "-e":
         if ('-k') in str(options):
-            userKey = options['-k']
+            user_key = options['-k']
         else:
-            userKey = help_functions.key_gen()
+            user_key = help_functions.key_gen()
         print('************************** Starting encryption **************************')
-        print('The Plain text is: ', plainText)
-        print("The Cipher text is: ", normal_serpent.encrypt(plainText, help_functions.convertToBitstring(userKey, 256)))
-        print("The key is: ", userKey)
+        print('The Plain text is: ', plain_text)
+        print("The Cipher text is: ", normal_serpent.encrypt(plain_text, help_functions.convertToBitstring(user_key, 256)))
+        print("The key is: ", user_key)
     elif mode == "-d":
-        userKey = options["-k"]
-        if not userKey:
+        user_key = options["-k"]
+        if not user_key:
             help_functions.helpExit('-k (key) required with -d (decrypt)')
      
         print('************************** Starting decryption **************************')
-        print('The Cipher text is: ', cipherText)
-        print('The Plain text is: ', normal_serpent.decrypt(cipherText, help_functions.convertToBitstring(userKey, 256)))
+        print('The Cipher text is: ', cipher_text)
+        print('The Plain text is: ', normal_serpent.decrypt(cipher_text, help_functions.convertToBitstring(user_key, 256)))
     else:
         help_functions.helpExit()
 

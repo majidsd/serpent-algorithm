@@ -6,7 +6,7 @@ import serpent_ctr as ctr_serpent
 import observer as observer
 
 def main():
-    number_of_thread = 2
+    number_of_processes = 2
     observer_object = observer.Observer(["plainText", "userKey", "cipherText"])
     opts, args = getopt.getopt(sys.argv[1:], "edhbt:k:p:c:i:")
     
@@ -36,20 +36,20 @@ def main():
         help_functions.helpExit("No mode specified")
    
     # Put plainText, userKey, cipherText in bitstring format.
-    plainText =  cipherText = userKey = None
+    plain_text =  cipher_text = user_key = None
     
     if  ('-p') in str(options):
-        plainText = options["-p"]
+        plain_text = options["-p"]
         
     if ('-c') in str(options):
-        cipherText = options["-c"]
+        cipher_text = options["-c"]
         
 
     if mode == "-e":
-        if not plainText:
+        if not plain_text:
             help_functions.helpExit("-p (plaintext) is required when doing -e (encrypt)")
     if mode == "-d":
-        if not cipherText:
+        if not cipher_text:
             help_functions.helpExit("-c (ciphertext) is required when doing -d (decrypt)")
             
     
@@ -60,25 +60,25 @@ def main():
     # statements here.
     if mode == "-e":
         if ('-k') in str(options):
-            userKey = options['-k']
+            user_key = options['-k']
         else:
-            userKey = help_functions.key_gen()
+            user_key = help_functions.key_gen()
 
-        iVBase = help_functions.random_iv(64)
-        print('The Plain text is: ', plainText)
-        print('The Cipher text is: ', ctr_serpent.encrypt_ctr(plainText, help_functions.convertToBitstring(userKey, 256), iVBase, number_of_thread))
-        print('The key is: ', userKey)
-        print('The Base IV is : ', iVBase)
+        iv_base = help_functions.random_iv(64)
+        print('The Plain text is: ', plain_text)
+        print('The Cipher text is: ', ctr_serpent.encrypt_ctr(plain_text, help_functions.convertToBitstring(user_key, 256), iv_base, number_of_processes))
+        print('The key is: ', user_key)
+        print('The Base IV is : ', iv_base)
 
     elif mode == "-d":
-        userKey = options["-k"]
+        user_key = options["-k"]
         iv = options["-i"]
 
-        if not userKey or not iv:
+        if not user_key or not iv:
             help_functions.helpExit("-k (key) and -i (iv) required with -d (decrypt)")
                 
-        print('The Cipher text: ', cipherText)
-        print("The Plain text is: ", ctr_serpent.decrypt_ctr(cipherText, help_functions.convertToBitstring(userKey, 256), iv, number_of_thread))
+        print('The Cipher text: ', cipher_text)
+        print("The Plain text is: ", ctr_serpent.decrypt_ctr(cipher_text, help_functions.convertToBitstring(user_key, 256), iv, number_of_processes))
 
     else:
         help_functions.helpExit()
