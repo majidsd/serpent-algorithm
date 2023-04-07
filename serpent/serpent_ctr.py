@@ -1,27 +1,7 @@
 import helper as helper_functions
 import serpent as normal_serpent
 
-import threading
-import concurrent.futures
-
-class serpant_ctr (threading.Thread):
-    def __init__(self, thread_id, name, sub_blocks, nonce, key):
-        threading.Thread.__init__(self)
-        self.thread_id = thread_id
-        self.name = name
-        self.sub_blocks = sub_blocks
-        self.nonce = nonce
-        self.key = key
-    
-    def run(self):
-        print("Starting "+ self.name)
-        encrypted_sub_blocks = []
-        for plaintext_block in self.sub_blocks:
-            block = helper_functions.binaryXor(plaintext_block, normal_serpent.encrypt((self.nonce), self.key))
-            encrypted_sub_blocks.append(block)
-            self.nonce = inc_bytes((self.nonce))
-        print("End "+ self.name)
-        return ''.join(encrypted_sub_blocks)
+import multiprocessing
 
 def inc_bytes(a):
     """ Returns a new byte array with the value increment by 1 """
@@ -49,16 +29,16 @@ def split_blocks(message, block_size=128, require_padding=False):
     assert len(message) % block_size == 0 or not require_padding
     return [message[i:i+128] for i in range(0, len(message), block_size)]
 
-def do_bulk_encrypt(name, sub_blocks, nonce, key):
+def do_bulk_encrypt(sub_blocks, nonce, key):
     encrypted_sub_blocks = []
-        
+
     for plaintext_block in sub_blocks:
         block = helper_functions.binaryXor(plaintext_block, normal_serpent.encrypt(nonce, key))
         encrypted_sub_blocks.append(block)
         nonce = inc_bytes((nonce))
     return ''.join(encrypted_sub_blocks)
 
-def do_bulk_decrypt(name, sub_blocks, nonce, key):
+def do_bulk_decrypt(sub_blocks, nonce, key):
     decrypted_sub_blocks = []
 
     for ciphertext_block in sub_blocks:
@@ -67,50 +47,40 @@ def do_bulk_decrypt(name, sub_blocks, nonce, key):
         nonce = inc_bytes((nonce))
     return ''.join(decrypted_sub_blocks)
 
-def encrypt_ctr(plaintext, userKey, iv_base, number_of_thread):
-    cipher_text = ''
+def encrypt_ctr(plaintext, user_key, iv_base, number_of_processes):
     nonce_base = iv_base
     splited_blocks = split_blocks(plaintext, require_padding=False)
 
     data_size = len(splited_blocks)
-    chunk_data = int(data_size/number_of_thread)
+    chunk_data = int(data_size/number_of_processes)
 
     if chunk_data == 0:
         chunk_data = 1
 
-    count = 1
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        futures_list = []
-        for i in range(0, data_size, chunk_data):
-            args = ["Task " + str(count), splited_blocks[i: i + chunk_data], nonce_base + helper_functions.convert_decimel_to_binary64(i), userKey]
-            future = executor.submit(lambda p: do_bulk_encrypt(*p), args)
-            futures_list.append(future)
-            count += count
-        
-        for item in futures_list:
-            cipher_text += item.result()
-    return cipher_text
+    arguments = []
+    for i in range(0, data_size, chunk_data):
+        arguments.append((splited_blocks[i: i + chunk_data], nonce_base + helper_functions.convert_decimel_to_binary64(i), user_key))
 
-def decrypt_ctr(cipherText, userKey, iv_base, number_of_thread):
-    plain_text = '' 
+    with multiprocessing.Pool() as pool:
+        ciphered_blocks = pool.starmap(do_bulk_encrypt, arguments)
+
+    return ''.join(ciphered_blocks)
+
+def decrypt_ctr(cipherText, user_key, iv_base, number_of_processes):
     nonce_base = iv_base
     splited_blocks = split_blocks(cipherText, require_padding=False)
     
     data_size = len(splited_blocks)
-    chunk_data = int(data_size/number_of_thread)
+    chunk_data = int(data_size/number_of_processes)
 
     if chunk_data == 0:
         chunk_data = 1
 
-    count = 1
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        futures_list = []
-        for i in range(0, data_size, chunk_data):
-            args = ["Task " + str(count), splited_blocks[i: i + chunk_data], nonce_base + helper_functions.convert_decimel_to_binary64(i), userKey]
-            future = executor.submit(lambda p: do_bulk_decrypt(*p), args)
-            futures_list.append(future)
-            count += count
-        
-        for item in futures_list:
-            plain_text += item.result()
-    return plain_text
+    arguments = []
+    for i in range(0, data_size, chunk_data):
+        arguments.append((splited_blocks[i: i + chunk_data], nonce_base + helper_functions.convert_decimel_to_binary64(i), user_key))
+
+    with multiprocessing.Pool() as pool:
+        plain_blocks = pool.starmap(do_bulk_decrypt, arguments)
+
+    return ''.join(plain_blocks)
